@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:rutagen/features/home/views/perfil.dart';
+import 'package:rutagen/features/home/views/splash.dart';
 import 'routes/app_routes.dart';
-import 'features/auth/splash_screen.dart';
-import 'features/auth/login/login_screen.dart';
-import 'features/auth/register/register_screen.dart';
-import 'features/home/home_layout.dart';
 import 'features/home/views/home_screen.dart';
-import 'features/auth/splash_screen_welcome.dart';
+import 'features/home/home_layout.dart';
 
 class HomeApp extends StatelessWidget {
   const HomeApp({super.key});
@@ -13,15 +11,13 @@ class HomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Punto Pymes',
+      title: 'Ruta IA',
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.splash,
       routes: {
-        AppRoutes.splash: (context) => const SplashScreen(),
-        AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.register: (context) => const RegisterScreen(),
-        AppRoutes.home: (context) => const HomeLayout(child: HomeScreen()),
-        AppRoutes.splashWelcome: (context) => const StartScreen(),
+        AppRoutes.home: (context) => const HomeLayout(child: TravelHomePage()),
+        AppRoutes.splash: (context) => const OnboardingScreen(),
+        AppRoutes.profile: (context) => const HomeLayout(child: ProfileScreen()),
       },
     );
   }
