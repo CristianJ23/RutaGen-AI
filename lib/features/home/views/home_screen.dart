@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rutagen/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TravelHomePage extends StatefulWidget {
   const TravelHomePage({super.key});
@@ -51,19 +53,21 @@ class _TravelHomePageState extends State<TravelHomePage> {
   List<Map<String, dynamic>> destinationCards = [
     {
       'image':
-          'https://concepto.de/wp-content/uploads/2013/03/turismo-peru-800x400.jpg',
+          'https://mediaim.expedia.com/destination/1/3b5df5ac1523b7e59cf11dc5ed15570e.jpg',
       'title': 'Galápagos',
       'location': 'Ecuador',
       'rating': 4.8,
     },
     {
-      'image': 'https://www.ceupe.pe/images/easyblog_articles/239/b2ap3_large_turis.jpg',
+      'image':
+          'https://www.ceupe.pe/images/easyblog_articles/239/b2ap3_large_turis.jpg',
       'title': 'Cusco',
       'location': 'Perú',
       'rating': 4.7,
     },
     {
-      'image': 'https://www.entornoturistico.com/wp-content/uploads/2025/06/Evolucion-del-turismo.jpg',
+      'image':
+          'https://www.entornoturistico.com/wp-content/uploads/2025/06/Evolucion-del-turismo.jpg',
       'title': 'Quito',
       'location': 'Ecuador',
       'rating': 4.5,
@@ -85,16 +89,15 @@ class _TravelHomePageState extends State<TravelHomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        toolbarHeight: 0.0, 
-        elevation: 0, 
-        backgroundColor: Colors.transparent, 
+        toolbarHeight: 0.0,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         forceMaterialTransparency: true,
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.04,
@@ -131,8 +134,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                   controller: _pageController,
                   itemCount: travelCardImages.length,
 
-
-
                   itemBuilder: (context, index) {
                     return Card(
                       margin: EdgeInsets.symmetric(horizontal: 5),
@@ -160,7 +161,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
 
-                              //qiemado texto cambiar 
+                              //qiemado texto cambiar
                               child: Text(
                                 'Ecuador y Perú',
                                 style: TextStyle(
@@ -168,8 +169,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                                   fontSize: screenWidth * 0.03,
                                 ),
                               ),
-
-
                             ),
                           ),
                           Align(
@@ -185,7 +184,12 @@ class _TravelHomePageState extends State<TravelHomePage> {
                                   Text(
                                     'Planifica tu Viaje',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(255, 57, 57, 57),
+                                      color: const Color.fromARGB(
+                                        255,
+                                        57,
+                                        57,
+                                        57,
+                                      ),
                                       fontSize: screenWidth * 0.05,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -193,13 +197,41 @@ class _TravelHomePageState extends State<TravelHomePage> {
                                   Text(
                                     'De manera Gratuita',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(255, 17, 17, 17),
+                                      color: const Color.fromARGB(
+                                        255,
+                                        17,
+                                        17,
+                                        17,
+                                      ),
                                       fontSize: screenWidth * 0.035,
                                     ),
                                   ),
                                   SizedBox(height: screenHeight * 0.01),
                                   ElevatedButton.icon(
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      SharedPreferences prefs =
+                                          await SharedPreferences.getInstance();
+                                      bool desbloqueado =
+                                          prefs.getBool(
+                                            "cronogramaDesbloqueado",
+                                          ) ??
+                                          false;
+
+                                      if (desbloqueado) {
+                                        // 👉 Ir directo al cronograma después de la primera vez
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.cronograma,
+                                        );
+                                      } else {
+                                        // 👉 Primera vez: ir al flujo normal
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/planificacion',
+                                        );
+                                      }
+                                    },
+
                                     icon: Icon(
                                       Icons.rocket_launch,
                                       size: screenWidth * 0.05,
@@ -226,9 +258,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                       ),
                     );
                   },
-
-
-
                 ),
               ),
             ),
@@ -319,11 +348,11 @@ class _TravelHomePageState extends State<TravelHomePage> {
             ),
             SizedBox(height: screenHeight * 0.03),
 
-              Padding(
+            Padding(
               padding: EdgeInsets.only(
                 left: screenWidth * 0.04,
                 right: screenWidth * 0.04,
-                bottom: screenHeight * 0.02, 
+                bottom: screenHeight * 0.02,
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -355,130 +384,135 @@ class _TravelHomePageState extends State<TravelHomePage> {
                           ),
                         );
                       }).toList(),
-                      
                 ),
-              
               ),
             ),
-
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
               child: ListView.builder(
                 shrinkWrap: true,
-                physics:
-                    NeverScrollableScrollPhysics(), 
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: destinationCards.length,
                 itemBuilder: (context, index) {
                   final cardData = destinationCards[index];
-                  return Card(
-                    margin: EdgeInsets.only(bottom: screenHeight * 0.02),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          cardData['image'],
-                          fit: BoxFit.cover,
-                          height: screenHeight * 0.3,
-                          width: double.infinity,
-                        ),
-                        Positioned(
-                          top: screenHeight * 0.01,
-                          right: screenWidth * 0.02,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.7),
-                            ),
-                            padding: EdgeInsets.all(screenWidth * 0.015),
-                            child: Icon(
-                              Icons.favorite_border,
-                              color: Colors.red,
-                              size: screenWidth * 0.06,
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.info);
+                    },
+                    child: Card(
+                      margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            cardData['image'],
+                            fit: BoxFit.cover,
+                            height: screenHeight * 0.3,
+                            width: double.infinity,
+                          ),
+
+                          Positioned(
+                            top: screenHeight * 0.01,
+                            right: screenWidth * 0.02,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                              padding: EdgeInsets.all(screenWidth * 0.015),
+                              child: Icon(
+                                Icons.favorite_border,
+                                color: Colors.red,
+                                size: screenWidth * 0.06,
+                              ),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height:
-                                screenHeight *
-                                0.1, // Altura del efecto traslúcido
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(
-                                0.4,
-                              ), // Efecto traslúcido
-                              borderRadius: BorderRadius.vertical(
-                                bottom: Radius.circular(15),
+
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: screenHeight * 0.1,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                borderRadius: BorderRadius.vertical(
+                                  bottom: Radius.circular(15),
+                                ),
                               ),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: screenWidth * 0.03,
-                                vertical: screenHeight * 0.01,
-                              ),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        cardData['title'],
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: screenWidth * 0.045,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            color: Colors.yellow,
-                                            size: screenWidth * 0.04,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.03,
+                                  vertical: screenHeight * 0.01,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          cardData['title'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: screenWidth * 0.045,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          Text(
-                                            cardData['rating'].toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: screenWidth * 0.035,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.star,
+                                              color: Color.fromARGB(
+                                                255,
+                                                255,
+                                                201,
+                                                5,
+                                              ),
+                                              size: screenWidth * 0.04,
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on,
-                                        color: Colors.white,
-                                        size: screenWidth * 0.04,
-                                      ),
-                                      SizedBox(width: screenWidth * 0.01),
-                                      Text(
-                                        cardData['location'],
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: screenWidth * 0.035,
+                                            Text(
+                                              cardData['rating'].toString(),
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: screenWidth * 0.035,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on,
+                                          color: Colors.white,
+                                          size: screenWidth * 0.04,
+                                        ),
+                                        SizedBox(width: screenWidth * 0.01),
+                                        Text(
+                                          cardData['location'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: screenWidth * 0.035,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

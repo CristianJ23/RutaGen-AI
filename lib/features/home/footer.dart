@@ -9,13 +9,13 @@ class CustomBottomNavBar extends StatefulWidget {
 
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
   final List<String> _routes = [
-    '/home', 
-    '/hotels', 
-    '/planning', 
-    '/profile', 
+    '/home',
+    '/planificacion',
+    '/planning',
+    '/profile',
   ];
 
-  int _currentIndex = 0; 
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -32,22 +32,20 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
   }
 
   void _onItemTapped(int index) {
-    if (index == _currentIndex) {
-      return; 
-    }
+    if (index == _currentIndex) {}
     final newRoute = _routes[index];
-    Navigator.pushReplacementNamed(context,newRoute);
-    setState(()  => _currentIndex = index);
+    Navigator.pushReplacementNamed(context, newRoute);
+    setState(() => _currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color selectedColor = Color.fromARGB(255, 204, 114, 45); 
+    const Color selectedColor = Color.fromARGB(255, 204, 114, 45);
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: _currentIndex,
-      onTap: (index) => _onItemTapped(index), 
+      onTap: (index) => _onItemTapped(index),
 
       elevation: 10,
       backgroundColor: Colors.white,
@@ -64,13 +62,13 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         ),
 
         BottomNavigationBarItem(
-          icon: Icon(Icons.king_bed_outlined), 
+          icon: Icon(Icons.king_bed_outlined),
           activeIcon: Icon(Icons.king_bed, color: selectedColor),
           label: 'Hoteles',
         ),
 
         BottomNavigationBarItem(
-          icon: Icon(Icons.route_outlined), 
+          icon: Icon(Icons.route_outlined),
           activeIcon: Icon(Icons.route, color: selectedColor),
           label: 'Planificación',
         ),
