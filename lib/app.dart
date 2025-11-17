@@ -16,7 +16,7 @@ class HomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ruta IA',
+      title: 'Rutaa IA',
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.splash,
       routes: {
