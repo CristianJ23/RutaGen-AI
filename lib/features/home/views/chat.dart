@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rutagen/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PantallaChat extends StatefulWidget {
   const PantallaChat({super.key});
@@ -12,6 +14,7 @@ class PantallaChat extends StatefulWidget {
 
 class _PantallaChatState extends State<PantallaChat>
     with SingleTickerProviderStateMixin {
+  
   bool mostrarCuadros = true;
   List<Map<String, dynamic>> mensajes = [];
   final TextEditingController _controller = TextEditingController();
@@ -22,6 +25,9 @@ class _PantallaChatState extends State<PantallaChat>
   @override
   void initState() {
     super.initState();
+    // 🟢 CARGAR CONVERSACIÓN AL INICIAR
+    _cargarMensajes(); 
+    
     anim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -30,38 +36,112 @@ class _PantallaChatState extends State<PantallaChat>
     fadeAnim = CurvedAnimation(parent: anim, curve: Curves.easeOut);
   }
 
+  Future<void> _cargarMensajes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? mensajesJson = prefs.getString('chat_messages');
+    
+    if (mensajesJson != null) {
+      List<dynamic> loadedList = json.decode(mensajesJson);
+      
+      setState(() {
+        mensajes = loadedList.cast<Map<String, dynamic>>();
+        if (mensajes.isNotEmpty) {
+          mostrarCuadros = false;
+        }
+      });
+    }
+  }
+
+  Future<void> _guardarMensajes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String mensajesJson = json.encode(mensajes);
+    await prefs.setString('chat_messages', mensajesJson);
+  }
+
+  // 🟢 FUNCIÓN PARA BORRAR MENSAJES GUARDADOS Y REINICIAR EL ESTADO
+  Future<void> _iniciarNuevoChat() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('chat_messages');
+    
+    setState(() {
+      mensajes = [];
+      mostrarCuadros = true;
+      anim.reset(); // Reinicia la animación si estaba en curso
+    });
+  }
+
   void _marcarCronogramaDesbloqueado() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool("cronogramaDesbloqueado", true);
   }
 
-  void enviarMensaje() {
+final String serverUrl = 'http://192.168.0.7:5000/query';
+
+Future<void> enviarMensaje() async {
     if (_controller.text.trim().isEmpty) return;
 
-    String mensaje = _controller.text.trim();
+    String mensajeUsuario = _controller.text.trim();
+    _controller.clear();
 
+    // 1. Mostrar mensaje del usuario inmediatamente
     setState(() {
       if (mensajes.isEmpty) {
         mostrarCuadros = false;
         anim.forward();
       }
-
-      mensajes.add({"me": true, "text": mensaje});
-
-      mensajes.add({
-        "me": false,
-        "text": "Hola, esto es un mensaje automático.",
-      });
-
-      int enviados = mensajes.where((e) => e["me"] == true).length;
-      if (enviados >= 5) {
-        _marcarCronogramaDesbloqueado();
-        Navigator.pushNamed(context, AppRoutes.cronograma);
-      }
+      mensajes.add({"me": true, "text": mensajeUsuario});
+      _guardarMensajes(); // 🟢 GUARDAR DESPUÉS DE AÑADIR MENSAJE DEL USUARIO
     });
 
-    _controller.clear();
-  }
+    try {
+        // 2. Hacer la petición HTTP POST al servidor Flask
+        final response = await http.post(
+            Uri.parse(serverUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({'query': mensajeUsuario}),
+        );
+
+        if (response.statusCode == 200) {
+            final jsonResponse = json.decode(response.body);
+            String respuestaRAG = jsonResponse['response'] ?? 'Error: No se encontró respuesta.';
+
+            // 4. Actualizar la interfaz con la respuesta del servidor
+            setState(() {
+                mensajes.add({
+                    "me": false, 
+                    "text": respuestaRAG,
+                });
+                
+                _guardarMensajes(); // 🟢 GUARDAR DESPUÉS DE AÑADIR MENSAJE DEL BOT
+                
+                // Lógica de desbloqueo (si aplica)
+                int enviados = mensajes.where((e) => e["me"] == true).length;
+                if (enviados >= 5) {
+                    _marcarCronogramaDesbloqueado();
+                    // Al navegar, la conversación queda guardada
+                    Navigator.pushNamed(context, AppRoutes.cronograma); 
+                }
+            });
+
+        } else {
+            setState(() {
+                mensajes.add({
+                    "me": false,
+                    "text": "Error del Servidor: Código ${response.statusCode}",
+                });
+                _guardarMensajes();
+            });
+        }
+    } catch (e) {
+        setState(() {
+            mensajes.add({
+                "me": false,
+                "text": "Error de Conexión: Asegúrate de que el servidor esté activo. $e",
+            });
+            _guardarMensajes();
+        });
+    }
+}
 
   Widget _cuadroInfo(String svg, String texto, Color colorIcono) {
     return Container(
@@ -78,7 +158,7 @@ class _PantallaChatState extends State<PantallaChat>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: colorIcono, // ⭐ FONDO PERSONALIZADO
+              color: colorIcono,
               borderRadius: BorderRadius.circular(10),
             ),
             child: SvgPicture.asset(svg, width: 24, height: 24),
@@ -174,6 +254,22 @@ class _PantallaChatState extends State<PantallaChat>
             ),
           ],
         ),
+        
+        // 🟢 NUEVA ACCIÓN: BOTÓN DE NUEVO CHAT
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15.0),
+            child: GestureDetector(
+              onTap: _iniciarNuevoChat,
+              child: const Icon(
+                Icons.refresh, // Usamos un ícono de recarga para el nuevo chat
+                color: Color(0xFFA5632E), // Color de la burbuja del usuario
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+        // 🟢 FIN DE NUEVA ACCIÓN
       ),
 
       body: Container(
